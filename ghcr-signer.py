@@ -127,13 +127,8 @@ def cli():
 def prepare(image, signatures_dir, key, sk, recursive):
     """Prepare the signatures for the given IMAGE and saves them to a local folder"""
     ensure_installed()
-    try:
-        with local_registry():
-            prepare_signature(image, signatures_dir, key, sk, recursive, tag=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Command execution failed: {e}")
-        print(f"Stderr: {e.stderr}")
-        raise
+    with local_registry():
+        prepare_signature(image, signatures_dir, key, sk, recursive, tag=True)
 
 
 def prepare_signature(image, signatures_dir, key, sk, recursive, tag=False):
@@ -236,7 +231,6 @@ def push_and_verify(source_dir, on_local_repo=True, tag_latest=False, move_to=No
             subprocess_run(
                 cmd,
                 check=True,
-                capture_output=True,
             )
 
             # Push the BLOB to the local registry
@@ -274,13 +268,8 @@ def push_and_verify(source_dir, on_local_repo=True, tag_latest=False, move_to=No
 def verify(source_dir):
     """Verifies that the to-be-published signatures match the trusted public key"""
     ensure_installed()
-    try:
-        with local_registry():
-            push_and_verify(source_dir, on_local_repo=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Command execution failed: {e}")
-        print(f"Stderr: {e.stderr}")
-        raise
+    with local_registry():
+        push_and_verify(source_dir, on_local_repo=True)
 
 
 @cli.command()
@@ -295,17 +284,12 @@ def verify(source_dir):
     help="Destination directory for the published signatures",
 )
 def publish(source_dir, published_dir):
-    try:
-        push_and_verify(
-            source_dir,
-            on_local_repo=False,
-            tag_latest=True,
-            move_to=Path(published_dir),
-        )
-    except subprocess.CalledProcessError as e:
-        print(f"Command execution failed: {e}")
-        print(f"Stderr: {e.stderr}")
-        raise
+    push_and_verify(
+        source_dir,
+        on_local_repo=False,
+        tag_latest=True,
+        move_to=Path(published_dir),
+    )
 
 
 if __name__ == "__main__":
