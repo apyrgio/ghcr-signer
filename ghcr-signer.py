@@ -127,8 +127,13 @@ def cli():
 def prepare(image, signatures_dir, key, sk, recursive):
     """Prepare the signatures for the given IMAGE and saves them to a local folder"""
     ensure_installed()
-    with local_registry():
-        prepare_signature(image, signatures_dir, key, sk, recursive, tag=True)
+    try:
+        with local_registry():
+            prepare_signature(image, signatures_dir, key, sk, recursive, tag=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Command execution failed: {e}")
+        print(f"Stderr: {e.stderr}")
+        raise
 
 
 def prepare_signature(image, signatures_dir, key, sk, recursive, tag=False):
@@ -290,9 +295,17 @@ def verify(source_dir):
     help="Destination directory for the published signatures",
 )
 def publish(source_dir, published_dir):
-    push_and_verify(
-        source_dir, on_local_repo=False, tag_latest=True, move_to=Path(published_dir)
-    )
+    try:
+        push_and_verify(
+            source_dir,
+            on_local_repo=False,
+            tag_latest=True,
+            move_to=Path(published_dir),
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Command execution failed: {e}")
+        print(f"Stderr: {e.stderr}")
+        raise
 
 
 if __name__ == "__main__":
