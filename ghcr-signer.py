@@ -269,8 +269,13 @@ def push_and_verify(source_dir, on_local_repo=True, tag_latest=False, move_to=No
 def verify(source_dir):
     """Verifies that the to-be-published signatures match the trusted public key"""
     ensure_installed()
-    with local_registry():
-        push_and_verify(source_dir, on_local_repo=True)
+    try:
+        with local_registry():
+            push_and_verify(source_dir, on_local_repo=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Command execution failed: {e}")
+        print(f"Stderr: {e.stderr}")
+        raise
 
 
 @cli.command()
